@@ -1,0 +1,33 @@
+/* 1. Modern Box Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. Base Document Styles */
+html, body {
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fafafa;
+  color: #1a1a1a;
+}
+
+/* 3. Design System CSS Variables (Tokens) */
+:root {
+  --primary-color: #0070f3;
+  --primary-hover: #0051a8;
+  --font-sans: system-ui, sans-serif;
+  --radius-md: 6px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+}
+
+/* 4. Basic Layout for your Testing Dashboard */
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
