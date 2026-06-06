@@ -1,14 +1,16 @@
-import { useRef, useState } from "react";
-
-
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
 
 const Chart = () => {
-    const countries = ["Netherlands nl", "USA us"]
     const jaggedArr = {
         users: ["john11", "alex24", "brandon65"],
         admins: ["peter25"],
-        owners: ["george99"]
-    }
+        owners: {
+            specialUser: ["george99"]
+        }
+    };
+
+    // Combine all children into a single flat array for easier rendering
+    const allChildren = [...jaggedArr.owners, ...jaggedArr.admins, ...jaggedArr.users];
 
     const containerRef = useRef(null);
     const parentBlockRef = useRef(null);
@@ -16,120 +18,128 @@ const Chart = () => {
 
     const [lines, setLines] = useState([]);
 
-
-        const calculateConnections = () => {
+    const calculateConnections = () => {
         if (!containerRef.current || !parentBlockRef.current || childRefs.current.length === 0) return;
 
-        // Get bounding rectangles
         const containerRect = containerRef.current.getBoundingClientRect();
         const parentRect = parentBlockRef.current.getBoundingClientRect();
 
-        // Find the bottom-center point of the parent block
+        // Target center-bottom of the parent block
         const startX = (parentRect.left + parentRect.width / 2) - containerRect.left;
         const startY = parentRect.bottom - containerRect.top;
 
-        // Map through each child element to find its top-center point
         const newLines = childRefs.current.map((childEl) => {
             if (!childEl) return null;
             const childRect = childEl.getBoundingClientRect();
-            
+
+            // Target center-top of each child block
             return {
                 x1: startX,
                 y1: startY,
                 x2: (childRect.left + childRect.width / 2) - containerRect.left,
                 y2: childRect.top - containerRect.top
             };
-        }).filter(Boolean); // Remove empty refs
+        }).filter(Boolean);
 
         setLines(newLines);
     };
 
-    // Recalculate positions after mounting and whenever layout changes
-    useEffect(() => {
+    // useLayoutEffect prevents visual flickering during the initial render
+    useLayoutEffect(() => {
         calculateConnections();
-        
-        // Watch for window resize changes to keep lines locked to targets
         window.addEventListener('resize', calculateConnections);
         return () => window.removeEventListener('resize', calculateConnections);
     }, []);
 
-
     return (
-
-        <div
-
+        <div 
+            ref={containerRef} 
+            className="chart-root"
+            style={{
+                position: "relative", // Crucial for absolute SVG positioning
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "60px", // Generates consistent vertical spacing for the lines
+                width: "100%",
+                maxWidth: "1000px",
+                margin: "0 auto",
+                padding: "20px"
+            }}
         >
-            hi i am a chart!
-
-
-            <div
-                className="chart-root"
+            {/* Absolute SVG overlay layer */}
+            <svg 
                 style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    width: 1000,
-                    height: 1000
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    pointerEvents: "none" // Allows clicking elements through the SVG layer
                 }}
             >
+                {lines.map((line, index) => (
+                    <line
+                        key={index}
+                        x1={line.x1}
+                        y1={line.y1}
+                        x2={line.x2}
+                        y2={line.y2}
+                        stroke="#a1a1aa"
+                        strokeWidth="2"
+                    />
+                ))}
+            </svg>
 
-                {/* Chart block */}
-                <div
-                    className="chart-block"
-                    style={{
-                        width: 100,
-                        height: 100,
-                        border: "1px solid black",
-                    }}
-                >
-                    dfhhdfhfdh';fhd';
-                </div>
+            {/* Parent Block (Root Node) */}
+            <div
+                ref={parentBlockRef}
+                className="chart-block"
+                style={{
+                    width: "120px",
+                    height: "60px",
+                    border: "2px solid #2563eb",
+                    borderRadius: "6px",
+                    backgroundColor: "#eff6ff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold",
+                    zIndex: 2
+                }}
+            >
+                Root Node
+            </div>
 
-                {/* Chart connection */}
-                <svg width="250" height="250">
-                    <line x1="100" y1="10050" x2="100" y2="100" stroke="black" stroke-width="2" />
-                </svg>
-
-
-                {/* Child blocks */}
-                <div
-                    className="chart-block-child"
-                    style={{
-                        display: "flex",
-                        flexDirection: "row"
-                    }}
-                >
-                    {jaggedArr.users.map((item, key) => (
-                        <div
-                            key={key}
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center"
-                            }}>
-                            <div
-                                className="chart-block-child-con"
-                            >
-                                .
-                            </div>
-                            <div
-                                style={{
-                                    border: "1px solid black",
-                                    padding: 25
-                                }}
-                            >
-                                {item}
-                            </div>
-                        </div>
-                    ))}
-
-
-                </div>
+            {/* Child Blocks Container */}
+            <div
+                className="chart-block-child"
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: "20px",
+                    zIndex: 2
+                }}
+            >
+                {allChildren.map((item, key) => (
+                    <div
+                        key={key}
+                        ref={(el) => (childRefs.current[key] = el)}
+                        style={{
+                            border: "2px solid #4b5563",
+                            borderRadius: "6px",
+                            padding: "15px 25px",
+                            backgroundColor: "#ffffff",
+                            textAlign: "center",
+                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                        }}
+                    >
+                        {item}
+                    </div>
+                ))}
             </div>
         </div>
+    );
+};
 
-    )
-}
-
-export default Chart
+export default Chart;
