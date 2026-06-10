@@ -9,8 +9,7 @@ const Chart = () => {
         }
     };
 
-    // Combine all children into a single flat array for easier rendering
-    const allChildren = [...jaggedArr.owners, ...jaggedArr.admins, ...jaggedArr.users];
+    const allChildren = [...jaggedArr.admins, ...jaggedArr.users];
 
     const containerRef = useRef(null);
     const parentBlockRef = useRef(null);
